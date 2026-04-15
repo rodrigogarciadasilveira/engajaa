@@ -30,12 +30,11 @@ app.use(helmet({
   },
 }));
 
-// CORS — origens permitidas (local + produção)
+// CORS — origens permitidas (local + produção Railway)
 const allowedOrigins = [
   'http://localhost:5173',  // Vite padrão
   'http://localhost:5175',  // Vite customizado (Docker dev)
-  'https://engajaa.vercel.app', // Produção Vercel
-  process.env.FRONTEND_URL, // Variável de ambiente (qualquer domínio custom)
+  process.env.FRONTEND_URL, // Produção Railway: https://SEU_FRONTEND.up.railway.app
 ].filter(Boolean);
 
 app.use(cors({
@@ -87,7 +86,8 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`API running on :${PORT}`));
+// Railway injeta $PORT automaticamente; fallback 3002 para dev local
+const PORT = process.env.PORT || 3002;
+app.listen(PORT, '0.0.0.0', () => console.log(`API running on :${PORT}`));
 
 module.exports = app;
