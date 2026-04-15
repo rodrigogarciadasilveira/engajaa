@@ -30,14 +30,17 @@ app.use(helmet({
   },
 }));
 
-// CORS — only allow app origins
+// CORS — origens permitidas (local + produção)
 const allowedOrigins = [
-  'http://localhost:5173',
-  process.env.FRONTEND_URL,
+  'http://localhost:5173',  // Vite padrão
+  'http://localhost:5175',  // Vite customizado (Docker dev)
+  'https://engajaa.vercel.app', // Produção Vercel
+  process.env.FRONTEND_URL, // Variável de ambiente (qualquer domínio custom)
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, cb) => {
+    // Permite requisições sem origin (Postman, mobile, SSR) e origens autorizadas
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
