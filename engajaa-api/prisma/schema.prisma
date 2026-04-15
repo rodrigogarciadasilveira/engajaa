@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String       @id @default(uuid())
+  name      String
+  plan      Plan         @default(FREE)
+  status    TenantStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+
+  users         User[]
+  igAccounts    InstagramAccount[]
+  igPosts       IgPost[]
+  scheduled     ScheduledPost[]
+  growthReports GrowthReport[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  tenantId     String
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
+  email        String
+  passwordHash String
+  name         String    @default("")
+  role         Role      @default(VIEWER)
+  inviteToken  String?
+  inviteExpiry DateTime?
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+model InstagramAccount {
+  id             String   @id @default(uuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  igUserId          String
+  username          String
+  accessToken       String
+  tokenExpiresAt    DateTime
+  connectedAt       DateTime @default(now())
+  lastSyncAt        DateTime?
+  followersCount    Int      @default(0)
+  mediaCount        Int      @default(0)
+  profilePictureUrl String?
+  biography         String?
+
+  @@index([tenantId])
+}
+
+model IgPost {
+  id            String    @id @default(uuid())
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  igMediaId     String
+  mediaType     MediaType
+  caption       String?
+  likeCount     Int       @default(0)
+  commentsCount Int       @default(0)
+  reach         Int       @default(0)
+  impressions   Int       @default(0)
+  saved         Int       @default(0)
+  sharesCount   Int       @default(0)
+  mediaUrl      String?
+  thumbnailUrl  String?
+  permalink     String?
+  timestamp     DateTime
+  syncedAt      DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, timestamp])
+}
+
+model ScheduledPost {
+  id          String     @id @default(uuid())
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  createdById String
+  mediaType   PostType
+  caption     String?
+  mediaUrls   Json
+  scheduledAt DateTime
+  status      PostStatus @default(DRAFT)
+  createdAt   DateTime   @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, scheduledAt])
+}
+
+model GrowthReport {
+  id                     String   @id @default(uuid())
+  tenantId               String
+  tenant                 Tenant   @relation(fields: [tenantId], references: [id])
+
+  periodStart            DateTime
+  periodEnd              DateTime
+  previousPeriodStart    DateTime
+  previousPeriodEnd      DateTime
+
+  postsCountCurrent      Int      @default(0)
+  postsCountPrevious     Int      @default(0)
+
+  reachCurrent           Int      @default(0)
+  reachPrevious          Int      @default(0)
+  reachVariationPct      Float    @default(0)
+
+  engagementRateCurrent  Float    @default(0)
+  engagementRatePrevious Float    @default(0)
+  engagementVariationPct Float    @default(0)
+
+  savesCurrent           Int      @default(0)
+  savesPrevious          Int      @default(0)
+  savesVariationPct      Float    @default(0)
+
+  topFormat              String?
+  topFormatScore         Float    @default(0)
+  bestHourWindow         String?
+
+  trend                  String   @default("STABLE")
+  mainDiagnosis          String?
+  recommendation         String?
+  summary                String?
+
+  reportStatus           String   @default("OK")
+
+  rawDataJson            Json?
+
+  createdAt              DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
+  @@map("growth_reports")
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  CAROUSEL_ALBUM
+}
+
+enum PostType {
+  REELS
+  CAROUSEL
+  IMAGE
+  STORY
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}

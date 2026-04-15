@@ -1,0 +1,112 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: engajaa_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: engajaa_dev
+      POSTGRES_USER: engajaa
+      POSTGRES_PASSWORD: engajaa_secret
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U engajaa -d engajaa_dev']
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: engajaa_redis
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./engajaa-api
+      dockerfile: Dockerfile.dev
+    container_name: engajaa_api
+    ports:
+      - '3002:3002'
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DATABASE_URL: postgresql://engajaa:engajaa_secret@postgres:5432/engajaa_dev
+      REDIS_URL: redis://redis:6379
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      AES_SECRET: ${AES_SECRET}
+      IG_CLIENT_ID: ${IG_CLIENT_ID}
+      IG_CLIENT_SECRET: ${IG_CLIENT_SECRET}
+      IG_REDIRECT_URI: ${IG_REDIRECT_URI}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      SMTP_HOST: maildev
+      SMTP_PORT: 1026
+      FRONTEND_URL: http://localhost:5175
+    volumes:
+      - ./engajaa-api:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npx nodemon src/app.js
+
+  worker:
+    build:
+      context: ./engajaa-api
+      dockerfile: Dockerfile.dev
+    container_name: engajaa_worker
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://engajaa:engajaa_secret@postgres:5432/engajaa_dev
+      REDIS_URL: redis://redis:6379
+      AES_SECRET: ${AES_SECRET}
+      IG_CLIENT_ID: ${IG_CLIENT_ID}
+      IG_CLIENT_SECRET: ${IG_CLIENT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      SMTP_HOST: maildev
+      SMTP_PORT: 1026
+    volumes:
+      - ./engajaa-api:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: node src/jobs/worker.js
+
+  web:
+    build:
+      context: ./engajaa-web
+      dockerfile: Dockerfile.dev
+    container_name: engajaa_web
+    ports:
+      - '5175:5175'
+    environment:
+      VITE_API_URL: http://localhost:3002
+    volumes:
+      - ./engajaa-web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+  maildev:
+    image: maildev/maildev
+    container_name: engajaa_maildev
+    ports:
+      - '1082:1080'
+      - '1026:1025'
+
+volumes:
+  postgres_data:
+  redis_data:

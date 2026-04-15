@@ -1,0 +1,41 @@
+# Variáveis de ambiente — NUNCA versionar
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependências
+node_modules/
+
+# Build
+dist/
+build/
+.vite/
+
+# Certificados
+*.pem
+*.key
+*.crt
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+logs/
+
+# IDEs
+.vscode/
+.idea/
+
+# Prisma local
+engajaa-api/prisma/dev.db
+engajaa-api/prisma/dev.db-journal
+
+# Docker volumes locais
+postgres-data/
+redis-data/

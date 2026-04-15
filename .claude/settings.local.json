@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s http://localhost:3002/health)",
+      "Bash(cmd.exe /c \"where cloudflared\")",
+      "Bash(powershell.exe -Command \"Get-Command cloudflared -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(cmd.exe /c \"dir /s /b C:\\\\Users\\\\rodrigogarcia\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\\\\Cloudflare* 2>nul\")",
+      "Bash(cmd.exe /c \"dir /s /b C:\\\\Users\\\\rodrigogarcia\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Links\\\\cloudflared.exe 2>nul && dir /s /b C:\\\\Users\\\\rodrigogarcia\\\\AppData\\\\Local\\\\Programs\\\\cloudflared* 2>nul\")",
+      "Read(//mnt/c/Users/rodrigogarcia/AppData/Local/Microsoft/**)",
+      "Bash(powershell.exe -Command \"docker exec engajaa_api npx prisma migrate dev --name add_instagram_profile_and_media_fields 2>&1\")",
+      "Bash(powershell.exe -Command \"docker logs engajaa_api --tail=5 2>&1 | Out-String\")",
+      "Bash(powershell.exe -Command ':*)",
+      "Bash(powershell.exe -Command \"docker ps --format 'table {{.Names}}\\\\t{{.Status}}'\")",
+      "Bash(powershell.exe -Command \"Invoke-WebRequest -Uri 'http://localhost:3002/health' -UseBasicParsing | Select-Object -ExpandProperty Content\")",
+      "Bash(powershell.exe -Command \"Get-Content 'C:\\\\Users\\\\rodrigogarcia\\\\Projetos\\\\Engajaa\\\\engajaa-web\\\\src\\\\contexts\\\\TenantContext.jsx'\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/growth-radar/overview -H \"Authorization: Bearer invalid\")"
+    ]
+  }
+}
