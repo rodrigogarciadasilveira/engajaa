@@ -32,6 +32,9 @@ logs/
 .vscode/
 .idea/
 
+# Claude Code (sessão local)
+.claude/settings.local.json
+
 # Prisma local
 engajaa-api/prisma/dev.db
 engajaa-api/prisma/dev.db-journal
