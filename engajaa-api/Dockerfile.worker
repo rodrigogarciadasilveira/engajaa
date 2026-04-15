@@ -2,9 +2,9 @@
 FROM node:20-alpine AS build
 RUN apk add --no-cache openssl
 WORKDIR /app
-COPY package*.json ./
+COPY engajaa-api/package*.json ./
 RUN npm ci
-COPY . .
+COPY engajaa-api/ .
 RUN npx prisma generate
 
 # ── Stage 2: imagem de produção ───────────────────────────────────────────────
